@@ -60,7 +60,7 @@ let mainWindow,
     lastIsPaused,
     lastSeekbarCurrentPosition,
     doublePressPlayPause,
-    updateTrackInfoTimeout,
+    scrobbleTrackTimeout,
     activityLikeStatus,
     windowsMediaProvider,
     audioDevices
@@ -68,6 +68,8 @@ let mainWindow,
 let isFirstTime = false
 
 let isClipboardWatcherRunning = false
+
+let currentTrackIsScrobbled = false
 
 let renderer_for_status_bar = (clipboardWatcher = null)
 
@@ -464,20 +466,24 @@ async function createWindow() {
                     lastTrackId !== trackId ||
                     (lastTrackProgress > progress && progress < 0.2)
                 ) {
+                    currentTrackIsScrobbled = false;
                     if (!trackInfo.isAdvertisement) {
-                        clearInterval(updateTrackInfoTimeout)
-                        updateTrackInfoTimeout = setTimeout(() => {
-                            scrobblerProvider.updateTrackInfo(
-                                title,
-                                author,
-                                album
-                            )
-                        }, 20 * 1000)
                         scrobblerProvider.updateNowPlaying(
                             title,
                             author,
                             album,
                             duration
+                        )
+                    }
+                }
+                if (!currentTrackIsScrobbled && !trackInfo.isAdvertisement) {
+                    let scrobbleThreshold = settingsProvider.get('range-lastfm-scrobble') / 100.0
+                    if (progress > scrobbleThreshold) {
+                        currentTrackIsScrobbled = true;
+                        scrobblerProvider.scrobbleTrack(
+                            title,
+                            author,
+                            album
                         )
                     }
                 }

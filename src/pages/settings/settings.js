@@ -30,6 +30,10 @@ const elementRangeSkipTrackShorterThan = document.getElementById(
     'range-skip-track-shorter-than'
 )
 
+const elementRangeLastFMScrobbleThreshold = document.getElementById(
+    'range-lastfm-scrobble'
+)
+
 if (isLinux())
     document
         .getElementById(
@@ -222,6 +226,20 @@ if (elementRangeSkipTrackShorterThan)
         settingsProvider.set(
             'settings-skip-track-shorter-than',
             elementRangeSkipTrackShorterThan.value
+        )
+    })
+
+if (elementRangeLastFMScrobbleThreshold)
+    elementRangeLastFMScrobbleThreshold.addEventListener('input', () => {
+        document.getElementById(
+            'range-lastfm-scrobble'
+        ).innerText =
+            elementRangeLastFMScrobbleThreshold.value === 0
+                ? `(Disabled) ${elementRangeLastFMScrobbleThreshold.value}`
+                : elementRangeLastFMScrobbleThreshold.value
+        settingsProvider.set(
+            'range-lastfm-scrobble',
+            elementRangeLastFMScrobbleThreshold.value
         )
     })
 

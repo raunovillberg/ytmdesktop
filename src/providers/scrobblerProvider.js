@@ -58,7 +58,7 @@ function getToken() {
     )
 }
 
-function updateTrackInfo(title, author, album) {
+function scrobbleTrack(title, author, album) {
     if (Scrobbler === undefined) signIn()
 
     const track = {
@@ -95,7 +95,7 @@ async function authorize(token) {
 
 module.exports = {
     getToken: getToken,
-    updateTrackInfo: updateTrackInfo,
+    scrobbleTrack: scrobbleTrack,
     updateNowPlaying: updateNowPlaying,
     getLogin: getLogin,
     setLogin: setLogin,
