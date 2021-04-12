@@ -232,7 +232,7 @@ if (elementRangeSkipTrackShorterThan)
 if (elementRangeLastFMScrobbleThreshold)
     elementRangeLastFMScrobbleThreshold.addEventListener('input', () => {
         document.getElementById(
-            'range-lastfm-scrobble'
+            'range-lastfm-scrobble-value'
         ).innerText =
             elementRangeLastFMScrobbleThreshold.value === 0
                 ? `(Disabled) ${elementRangeLastFMScrobbleThreshold.value}`

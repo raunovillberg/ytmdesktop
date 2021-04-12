@@ -69,7 +69,7 @@ let isFirstTime = false
 
 let isClipboardWatcherRunning = false
 
-let currentTrackIsScrobbled = false
+let currentTrackHasBeenScrobbled = false
 
 let renderer_for_status_bar = (clipboardWatcher = null)
 
@@ -457,33 +457,38 @@ async function createWindow() {
                     : -1,
                 playerInfo.isPaused
             )
-
-            /**
-             * Scrobble when track changes or when current track starts from the beginning
-             */
             if (settingsProvider.get('settings-last-fm-scrobbler')) {
+                if (!currentTrackHasBeenScrobbled && !trackInfo.isAdvertisement) {
+                    // 'progress' is from 0.0 to 1.0
+                    // threshold in settings is from 1 to 100 
+                    let scrobbleThreshold = settingsProvider.get('range-lastfm-scrobble') / 100.0
+                    if (progress > scrobbleThreshold) {
+                        currentTrackHasBeenScrobbled = true;
+                        clearInterval(scrobbleTrackTimeout)
+                        scrobbleTrackTimeout = setTimeout(() => {
+                            scrobblerProvider.scrobbleTrack(
+                                title,
+                                author,
+                                album
+                            )
+                        }, 3000)
+                    }
+                }
+
+                /**
+                 * Update "Now Playing" when track changes or when current track starts from the beginning.
+                 */
                 if (
                     lastTrackId !== trackId ||
                     (lastTrackProgress > progress && progress < 0.2)
                 ) {
-                    currentTrackIsScrobbled = false;
+                    currentTrackHasBeenScrobbled = false;
                     if (!trackInfo.isAdvertisement) {
                         scrobblerProvider.updateNowPlaying(
                             title,
                             author,
                             album,
                             duration
-                        )
-                    }
-                }
-                if (!currentTrackIsScrobbled && !trackInfo.isAdvertisement) {
-                    let scrobbleThreshold = settingsProvider.get('range-lastfm-scrobble') / 100.0
-                    if (progress > scrobbleThreshold) {
-                        currentTrackIsScrobbled = true;
-                        scrobblerProvider.scrobbleTrack(
-                            title,
-                            author,
-                            album
                         )
                     }
                 }
