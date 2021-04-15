@@ -80,6 +80,27 @@ function updateNowPlaying(title, author, album, duration) {
         duration: duration,
     }
     Scrobbler.NowPlaying(track, function (_) {})
+
+    // const trackInfo = {
+    //     artist: author,
+    //     track: title
+    // }
+    // Scrobbler.GetTrackInfo(trackInfo, function(res) {
+    //     console.log(res)
+    // })
+}
+
+/// NOTE: Need to add '&username=angryhead' to end of node_modules/scribble/index.js to get access to userplaycount!
+function getTrackInfo(title, author, callback) {
+    if (Scrobbler === undefined) signIn()
+
+    const trackInfo = {
+        artist: author,
+        track: title,
+    }
+    Scrobbler.GetTrackInfo(trackInfo, function (res) {
+        callback(res.track.userplaycount)
+    })
 }
 
 async function authorize(token) {
@@ -97,6 +118,7 @@ module.exports = {
     getToken: getToken,
     scrobbleTrack: scrobbleTrack,
     updateNowPlaying: updateNowPlaying,
+    getTrackInfo: getTrackInfo,
     getLogin: getLogin,
     setLogin: setLogin,
     authorize: authorize,

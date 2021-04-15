@@ -70,6 +70,7 @@ let isFirstTime = false
 let isClipboardWatcherRunning = false
 
 let currentTrackHasBeenScrobbled = false
+let trackPlayCount = ''
 
 let renderer_for_status_bar = (clipboardWatcher = null)
 
@@ -108,7 +109,7 @@ app.commandLine.appendSwitch('disable-features', 'MediaSessionService') //This k
 if (!app.isDefaultProtocolClient('ytmd', process.execPath)) {
     app.setAsDefaultProtocolClient('ytmd', process.execPath)
 }
-    
+
 createCustomAppDir()
 
 createCustomCSSDir()
@@ -307,7 +308,7 @@ async function createWindow() {
 
     // Open the DevTools.
     // mainWindow.webContents.openDevTools({ mode: 'detach' });
-    // view.webContents.openDevTools({ mode: 'detach' })
+    view.webContents.openDevTools({ mode: 'detach' })
 
     mediaControl.createThumbar(mainWindow, infoPlayerProvider.getAllInfo())
 
@@ -442,7 +443,7 @@ async function createWindow() {
         const album = trackInfo.album
         const duration = trackInfo.duration
         const cover = trackInfo.cover
-        const nowPlaying = `${title} - ${author}`
+        var nowPlaying = `${title} - ${author} - ${trackPlayCount}`
 
         if (title && author) {
             rainmeterNowPlaying.setActivity(getAll())
@@ -458,12 +459,16 @@ async function createWindow() {
                 playerInfo.isPaused
             )
             if (settingsProvider.get('settings-last-fm-scrobbler')) {
-                if (!currentTrackHasBeenScrobbled && !trackInfo.isAdvertisement) {
+                if (
+                    !currentTrackHasBeenScrobbled &&
+                    !trackInfo.isAdvertisement
+                ) {
                     // 'progress' is from 0.0 to 1.0
-                    // threshold in settings is from 1 to 100 
-                    let scrobbleThreshold = settingsProvider.get('range-lastfm-scrobble') / 100.0
+                    // threshold in settings is from 1 to 100
+                    let scrobbleThreshold =
+                        settingsProvider.get('range-lastfm-scrobble') / 100.0
                     if (progress > scrobbleThreshold) {
-                        currentTrackHasBeenScrobbled = true;
+                        currentTrackHasBeenScrobbled = true
                         clearInterval(scrobbleTrackTimeout)
                         scrobbleTrackTimeout = setTimeout(() => {
                             scrobblerProvider.scrobbleTrack(
@@ -482,13 +487,34 @@ async function createWindow() {
                     lastTrackId !== trackId ||
                     (lastTrackProgress > progress && progress < 0.2)
                 ) {
-                    currentTrackHasBeenScrobbled = false;
+                    currentTrackHasBeenScrobbled = false
                     if (!trackInfo.isAdvertisement) {
                         scrobblerProvider.updateNowPlaying(
                             title,
                             author,
                             album,
                             duration
+                        )
+                        console.log('yo yo yo ')
+                        scrobblerProvider.getTrackInfo(
+                            title,
+                            author,
+                            function (playCount) {
+                                trackPlayCount = playCount
+                                console.log(
+                                    `${title} - ${author} - ${playCount}`
+                                )
+                                nowPlaying = `${title} - ${author} - ${trackPlayCount}`
+
+                                if (isMac()) {
+                                    global.sharedObj.title = nowPlaying
+                                    updateStatusBar()
+                                }
+
+                                mainWindow.setTitle(nowPlaying)
+
+                                tray.setTooltip(nowPlaying)
+                            }
                         )
                     }
                 }
